@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Chat</title>
+</head>
+<body>
+	<style>
+		#container {
+			width: 100%;
+			max-width: 768px;
+			margin: 0 auto;
+		}
+
+		#messages {
+			display: flex;
+			flex-direction: column;
+			min-height: 100px;
+			background: #ececec;
+			padding: 10px;
+		}
+
+		#action {
+			display: flex;
+			height: 30px;
+		}
+
+		#action, #message {
+			width: 100%;
+		}
+
+		.message {
+			max-width: 60%;
+			margin: 5px 0;
+		}
+
+		.sender {
+			font-size: 12px;
+		}
+
+		.content {
+			display: inline-block;
+			padding: 5px 10px;
+			background: gray;
+			color: white;
+			border-radius: 12px;
+		}
+
+		.me {
+			margin-left: auto;
+		}
+
+		.me .content {
+			float: right;
+			background: #0095ff;
+		}
+
+
+		
+	</style>
+
+	<div id="container">
+		<section id="messages">
+
+		</section>
+		<section id="action">
+			<input type="text" id="message">
+			<button id="btn-send">Send</button>
+		</section>
+	</div>
+	<script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+	<script>
+		const socket = io("http://localhost:3000")
+		const btnSend = document.getElementById('btn-send')
+		const message = document.getElementById('message')
+		const messages_container = document.getElementById('messages')
+
+		function renderMessage(messageObj, isFromMe){
+			let eleContainer = document.createElement('div')
+			let eleText = document.createElement('div')
+			let eleSender = document.createElement('div')
+
+			if (isFromMe) {eleContainer.classList.add('me')}
+			eleContainer.classList.add('message')
+			eleSender.classList.add('sender')
+			eleText.classList.add('content')
+
+			eleText.innerHTML = messageObj.content
+			eleSender.innerHTML = messageObj.from
+
+			eleContainer.appendChild(eleSender)
+			eleContainer.appendChild(eleText)
+
+			messages_container.appendChild(eleContainer)
+		}
+
+		btnSend.addEventListener('click', function(){
+			socket.emit("message", message.value)
+			message.value = ""
+		})
+
+		socket.on("notifications", data => {
+			renderMessage(data, data.from === socket.id)
+		})
+
+	</script>
+</body>
+</html>
